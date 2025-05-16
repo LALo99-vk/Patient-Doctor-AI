@@ -198,5 +198,40 @@ app.post('/api/ai/analyze-image', upload.single('image'), async (req, res) => {
   }
 });
 
+// First Aid Guide Endpoint (AI)
+app.post('/api/first-aid', async (req, res) => {
+  try {
+    const { symptom } = req.body;
+    const response = await openai.chat.completions.create({
+      model: 'gpt-4o',
+      messages: [
+        {
+          role: 'system',
+          content: `You are a first aid assistant. For any given symptom or emergency, provide clear, step-by-step first aid instructions (do not change the instructions format). Always include a relevant YouTube video link for a demo as the field videoUrl. If you cannot find a specific video, use 'https://www.youtube.com/watch?v=OSPIIcB2bQA' as a general first aid demo. Respond in JSON with keys: instructions, videoUrl.`
+        },
+        {
+          role: 'user',
+          content: `First aid instructions for: ${symptom}`
+        }
+      ],
+      max_tokens: 600
+    });
+    let result = null;
+    try {
+      result = JSON.parse(response.choices[0].message.content);
+    } catch (e) {
+      return res.json({ instructions: response.choices[0].message.content, videoUrl: 'https://www.youtube.com/watch?v=OSPIIcB2bQA' });
+    }
+    // Fallback if videoUrl is missing or empty
+    if (!result.videoUrl) {
+      result.videoUrl = 'https://www.youtube.com/watch?v=OSPIIcB2bQA';
+    }
+    res.json(result);
+  } catch (error) {
+    console.error('First aid AI error:', error);
+    res.status(500).json({ error: 'Failed to get first aid instructions' });
+  }
+});
+
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`)); 

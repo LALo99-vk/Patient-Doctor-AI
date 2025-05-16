@@ -195,6 +195,39 @@ const FirstAidPage: React.FC = () => {
                 <p className="text-blue-700 whitespace-pre-wrap">{guide.solution}</p>
               </div>
             </div>
+            {/* Video Demo */}
+            {guide.videoUrl && (
+              <div className="mb-6">
+                <h3 className="text-lg font-medium text-gray-900 mb-2">Video Demo</h3>
+                {(() => {
+                  // Robustly convert any YouTube URL to embed format
+                  let embedUrl = '';
+                  if (guide.videoUrl.includes('youtube.com/watch?v=')) {
+                    const videoId = guide.videoUrl.split('watch?v=')[1].split('&')[0];
+                    embedUrl = `https://www.youtube.com/embed/${videoId}`;
+                  } else if (guide.videoUrl.includes('youtu.be/')) {
+                    const videoId = guide.videoUrl.split('youtu.be/')[1].split('?')[0];
+                    embedUrl = `https://www.youtube.com/embed/${videoId}`;
+                  }
+                  if (embedUrl) {
+                    return (
+                      <iframe
+                        src={embedUrl}
+                        title="First Aid Video Demo"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                        className="w-full h-64 rounded border"
+                      ></iframe>
+                    );
+                  } else {
+                    // fallback: show as a link
+                    return (
+                      <a href={guide.videoUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">Watch Video Demo</a>
+                    );
+                  }
+                })()}
+              </div>
+            )}
             
             <div className="mb-6">
               <h3 className="text-lg font-medium text-gray-900 mb-2">Description</h3>

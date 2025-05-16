@@ -104,12 +104,24 @@ export const getDiagnosis = async (symptoms: string): Promise<any> => {
 // Get first aid guide
 export const getFirstAidGuide = async (symptom: string): Promise<FirstAidGuide> => {
   try {
+    const response = await axios.post(`${API_URL}/first-aid`, { symptom });
+    // The backend always returns instructions and videoUrl
+    return {
+      symptom,
+      solution: response.data.instructions,
+      description: 'Please seek professional medical help if symptoms persist or worsen.',
+      videoUrl: response.data.videoUrl,
+      mediaUrls: []
+    };
+  } catch (error) {
+    console.error('First aid guide retrieval failed:', error);
+    // Fallback to OpenAI API call if backend call fails
     const response = await apiCall('/chat/completions', 'POST', {
       model: 'gpt-4',
       messages: [
         {
           role: 'system',
-          content: 'You are a first aid guide assistant. Provide clear, step-by-step instructions for handling medical emergencies.'
+          content: 'You are a first aid guide assistant. Provide clear, step-by-step instructions for handling medical emergencies. Also, suggest a relevant YouTube video URL for a demo. If no video is available, respond with "No video available."'
         },
         {
           role: 'user',
@@ -120,15 +132,26 @@ export const getFirstAidGuide = async (symptom: string): Promise<FirstAidGuide> 
     });
 
     const content = response.choices[0].message.content;
+    // Check if the response indicates no video is available
+    const noVideoAvailable = content.includes('No video available');
+    let videoUrl = 'https://www.youtube.com/embed/OSPIIcB2bQA'; // Default video
+
+    if (!noVideoAvailable) {
+      // Extract YouTube video ID from the response
+      const videoIdMatch = content.match(/https:\/\/www\.youtube\.com\/watch\?v=([\w-]+)/);
+      if (videoIdMatch) {
+        const videoId = videoIdMatch[1];
+        videoUrl = `https://www.youtube.com/embed/${videoId}`;
+      }
+    }
+
     return {
       symptom,
       solution: content,
       description: 'Please seek professional medical help if symptoms persist or worsen.',
+      videoUrl,
       mediaUrls: []
     };
-  } catch (error) {
-    console.error('First aid guide retrieval failed:', error);
-    throw error;
   }
 };
 

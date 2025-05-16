@@ -91,4 +91,5 @@ export interface FirstAidGuide {
   solution: string;
   description: string;
   mediaUrls?: string[];
+  videoUrl?: string;
 }
