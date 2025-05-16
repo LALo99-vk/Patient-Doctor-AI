@@ -200,3 +200,83 @@ export const createAppointment = (data: any) => axios.post(`${API_URL}/appointme
 // Prescriptions
 export const getPrescriptions = (userId: string) => axios.get(`${API_URL}/prescriptions`, { params: { userId } });
 export const createPrescription = (data: any) => axios.post(`${API_URL}/prescriptions`, data);
+
+// Create a new user
+export const createUser = async (userData: { email: string; password: string; role: string }): Promise<any> => {
+  try {
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(userData.email)) {
+      throw new Error('Invalid email format');
+    }
+
+    // Validate password criteria
+    const passwordRegex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    if (!passwordRegex.test(userData.password)) {
+      throw new Error('Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character');
+    }
+
+    const response = await axios.post(`${API_URL}/users`, userData);
+    return response.data;
+  } catch (error) {
+    console.error('User creation failed:', error);
+    throw error;
+  }
+};
+
+// Sign up a new user
+export const signUp = async (userData: { email: string; password: string; role: string }): Promise<any> => {
+  try {
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(userData.email)) {
+      throw new Error('Invalid email format');
+    }
+
+    // Validate password criteria
+    const passwordRegex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    if (!passwordRegex.test(userData.password)) {
+      throw new Error('Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character');
+    }
+
+    const response = await axios.post(`${API_URL}/users/signup`, userData);
+    return response.data;
+  } catch (error) {
+    console.error('Sign up failed:', error);
+    throw error;
+  }
+};
+
+// Login user
+export const login = async (userData: { email: string; password: string }): Promise<any> => {
+  try {
+    const response = await axios.post(`${API_URL}/users/login`, userData);
+    return response.data;
+  } catch (error) {
+    console.error('Login failed:', error);
+    throw error;
+  }
+};
+
+// Create a new account
+export const createAccount = async (userData: { email: string; password: string; role: string }): Promise<any> => {
+  try {
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(userData.email)) {
+      throw new Error('Invalid email format');
+    }
+
+    // Validate password criteria
+    const passwordRegex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    if (!passwordRegex.test(userData.password)) {
+      throw new Error('Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character');
+    }
+
+    const response = await axios.post(`${API_URL}/users/create`, userData);
+    return response.data;
+  } catch (error) {
+    console.error('Account creation failed:', error);
+    throw error;
+  }
+};

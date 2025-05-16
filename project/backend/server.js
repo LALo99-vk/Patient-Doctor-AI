@@ -167,31 +167,49 @@ app.post('/api/ai/analyze-image', upload.single('image'), async (req, res) => {
     }
     // Send image to OpenAI Vision API (GPT-4V)
     const response = await openai.chat.completions.create({
-      model: 'gpt-4o',
+      model: 'gpt-4-vision-preview',
       messages: [
         {
           role: 'system',
-          content: 'You are a medical AI assistant. Analyze the uploaded image for skin, hair, wounds, burns, or allergies. Respond in JSON with keys: severity (mild/moderate/severe/critical), diagnosis (short), remedies (object with traditional and modern), healingTime (estimate), warning (if serious, else empty string). Give both traditional and modern remedies.'
+          content: 'You are a medical AI assistant. Analyze the uploaded image for skin, hair, wounds, burns, or allergies. You must respond in the following JSON format: { "severity": "mild/moderate/severe/critical", "diagnosis": "short diagnosis", "remedies": { "traditional": "traditional remedies", "modern": "modern remedies" }, "healingTime": "estimated healing time", "warning": "warning if serious, else empty string" }'
         },
         {
           role: 'user',
           content: [
-            { type: 'text', text: 'Analyze this image and provide the required information.' },
+            { type: 'text', text: 'Analyze this image and provide the required information in the specified JSON format.' },
             { type: 'image_url', image_url: { url: `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}` } }
           ]
         }
       ],
       max_tokens: 600
     });
+
     // Try to parse the JSON from the AI's response
     let result = null;
     try {
-      result = JSON.parse(response.choices[0].message.content);
+      const content = response.choices[0].message.content;
+      result = JSON.parse(content);
+      
+      // Validate the required fields
+      if (!result.severity || !result.diagnosis || !result.remedies || !result.healingTime) {
+        throw new Error('Missing required fields in AI response');
+      }
+      
+      // Ensure remedies has both traditional and modern fields
+      if (!result.remedies.traditional || !result.remedies.modern) {
+        throw new Error('Missing remedies fields in AI response');
+      }
+      
+      res.json(result);
     } catch (e) {
-      // fallback: return raw text
-      return res.json({ severity: 'unknown', diagnosis: 'Could not parse AI response', remedies: { traditional: '', modern: '' }, healingTime: '', warning: response.choices[0].message.content });
+      console.error('Failed to parse AI response:', e);
+      // Return a more informative error response
+      return res.status(500).json({
+        error: 'Failed to analyze image',
+        details: 'The AI response could not be properly formatted. Please try again.',
+        rawResponse: response.choices[0].message.content
+      });
     }
-    res.json(result);
   } catch (error) {
     console.error('AI image analysis error:', error);
     res.status(500).json({ error: 'Failed to analyze image' });

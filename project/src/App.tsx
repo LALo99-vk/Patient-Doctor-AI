@@ -7,7 +7,7 @@ import { LanguageProvider } from './context/LanguageContext';
 import Layout from './components/ui/Layout';
 
 // Auth Components
-import LoginForm from './components/auth/LoginForm';
+import Login from './components/auth/Login';
 
 // Doctor Components
 import DoctorDashboard from './components/doctor/DoctorDashboard';
@@ -15,6 +15,7 @@ import PatientList from './components/doctor/PatientList';
 import ConsultationForm from './components/doctor/ConsultationForm';
 import DoctorSchedule from './components/doctor/DoctorSchedule';
 import Consultations from './components/doctor/Consultations';
+import PatientDetails from './components/doctor/PatientDetails';
 
 // Patient Components
 import PatientDashboard from './components/patient/PatientDashboard';
@@ -59,7 +60,7 @@ const App: React.FC = () => {
         <Router>
           <Routes>
             {/* Public Routes */}
-            <Route path="/login" element={<LoginForm />} />
+            <Route path="/login" element={<Login />} />
             
             {/* Doctor Routes */}
             <Route
@@ -83,6 +84,20 @@ const App: React.FC = () => {
                   element={
                     <Layout title="Patient Management">
                       <PatientList />
+                    </Layout>
+                  }
+                  allowedRoles={['doctor']}
+                />
+              }
+            />
+            
+            <Route
+              path="/doctor/patients/:id"
+              element={
+                <ProtectedRoute
+                  element={
+                    <Layout title="Patient Details">
+                      <PatientDetails />
                     </Layout>
                   }
                   allowedRoles={['doctor']}
