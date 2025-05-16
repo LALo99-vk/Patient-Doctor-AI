@@ -9,6 +9,7 @@ const FirstAidPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [guide, setGuide] = useState<FirstAidGuide | null>(null);
+  const guideRef = React.useRef<HTMLDivElement>(null);
   
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,6 +25,61 @@ const FirstAidPage: React.FC = () => {
       console.error('Error fetching first aid guide:', error);
     } finally {
       setIsLoading(false);
+    }
+  };
+  
+  const handleShare = async () => {
+    if (!guide) return;
+    const shareText = `First Aid: ${guide.symptom}\n\nSolution:\n${guide.solution}\n\nDescription:\n${guide.description}`;
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `First Aid: ${guide.symptom}`,
+          text: shareText,
+        });
+      } catch (err) {
+        // User cancelled or error
+      }
+    } else if (navigator.clipboard) {
+      try {
+        await navigator.clipboard.writeText(shareText);
+        alert('First aid instructions copied to clipboard!');
+      } catch (err) {
+        alert('Failed to copy to clipboard.');
+      }
+    } else {
+      alert('Sharing is not supported on this device.');
+    }
+  };
+
+  const handleDownload = () => {
+    if (!guide) return;
+    const content = `First Aid: ${guide.symptom}\n\nSolution:\n${guide.solution}\n\nDescription:\n${guide.description}`;
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${guide.symptom.replace(/\s+/g, '_')}_FirstAid.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const handlePrint = () => {
+    if (!guideRef.current) return;
+    const printContents = guideRef.current.innerHTML;
+    const printWindow = window.open('', '', 'height=600,width=800');
+    if (printWindow) {
+      printWindow.document.write('<html><head><title>First Aid Guide</title>');
+      printWindow.document.write('<style>body{font-family:sans-serif;padding:2rem;}h2{margin-top:0;}@media print{button{display:none;}}</style>');
+      printWindow.document.write('</head><body >');
+      printWindow.document.write(printContents);
+      printWindow.document.write('</body></html>');
+      printWindow.document.close();
+      printWindow.focus();
+      printWindow.print();
+      printWindow.close();
     }
   };
   
@@ -113,6 +169,7 @@ const FirstAidPage: React.FC = () => {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
                   </svg>
                 }
+                onClick={handleShare}
               >
                 Share
               </Button>
@@ -121,64 +178,67 @@ const FirstAidPage: React.FC = () => {
                 size="sm"
                 icon={
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v16h16V4H4zm4 4h8v8H8V8z" />
                   </svg>
                 }
+                onClick={handleDownload}
               >
-                Print
+                Download
               </Button>
             </div>
           </div>
           
-          <div className="mb-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-2">Solution</h3>
-            <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-md">
-              <p className="text-blue-700 whitespace-pre-wrap">{guide.solution}</p>
-            </div>
-          </div>
-          
-          <div className="mb-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-2">Description</h3>
-            <p className="text-gray-700 whitespace-pre-wrap">{guide.description}</p>
-          </div>
-          
-          {guide.mediaUrls && guide.mediaUrls.length > 0 && (
+          <div ref={guideRef}>
             <div className="mb-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-2">Helpful Resources</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {guide.mediaUrls.map((url, index) => {
-                  // Check if it's a YouTube URL
-                  const isYouTube = url.includes('youtube.com') || url.includes('youtu.be');
-                  
-                  if (isYouTube) {
-                    return (
-                      <div key={index} className="aspect-w-16 aspect-h-9 rounded-md overflow-hidden">
-                        <iframe
-                          src={url}
-                          title={`Resource ${index + 1}`}
-                          frameBorder="0"
-                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                          allowFullScreen
-                          className="w-full h-full"
-                        ></iframe>
-                      </div>
-                    );
-                  } else {
-                    // Assume it's an image
-                    return (
-                      <div key={index} className="rounded-md overflow-hidden">
-                        <img
-                          src={url}
-                          alt={`Resource ${index + 1}`}
-                          className="w-full h-auto"
-                        />
-                      </div>
-                    );
-                  }
-                })}
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Solution</h3>
+              <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-md">
+                <p className="text-blue-700 whitespace-pre-wrap">{guide.solution}</p>
               </div>
             </div>
-          )}
+            
+            <div className="mb-6">
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Description</h3>
+              <p className="text-gray-700 whitespace-pre-wrap">{guide.description}</p>
+            </div>
+            
+            {guide.mediaUrls && guide.mediaUrls.length > 0 && (
+              <div className="mb-6">
+                <h3 className="text-lg font-medium text-gray-900 mb-2">Helpful Resources</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {guide.mediaUrls.map((url, index) => {
+                    // Check if it's a YouTube URL
+                    const isYouTube = url.includes('youtube.com') || url.includes('youtu.be');
+                    
+                    if (isYouTube) {
+                      return (
+                        <div key={index} className="aspect-w-16 aspect-h-9 rounded-md overflow-hidden">
+                          <iframe
+                            src={url}
+                            title={`Resource ${index + 1}`}
+                            frameBorder="0"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowFullScreen
+                            className="w-full h-full"
+                          ></iframe>
+                        </div>
+                      );
+                    } else {
+                      // Assume it's an image
+                      return (
+                        <div key={index} className="rounded-md overflow-hidden">
+                          <img
+                            src={url}
+                            alt={`Resource ${index + 1}`}
+                            className="w-full h-auto"
+                          />
+                        </div>
+                      );
+                    }
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
           
           <div className="mt-6 border-t border-gray-200 pt-6">
             <div className="flex justify-between">

@@ -235,7 +235,7 @@ const PatientDashboard: React.FC = () => {
             )}
             
             <div className="mt-4">
-              <Link to="/patient/appointments/book">
+              <Link to="/patient/appointments">
                 <Button variant="primary" className="w-full">
                   Book New Appointment
                 </Button>

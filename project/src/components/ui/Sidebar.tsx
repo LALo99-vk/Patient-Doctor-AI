@@ -96,6 +96,16 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
       ),
     },
     {
+      name: 'Profile',
+      path: '/patient/profile',
+      icon: (
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="7" r="4" />
+          <path d="M5.5 21a8.38 8.38 0 0 1 13 0" />
+        </svg>
+      ),
+    },
+    {
       name: 'Appointments',
       path: '/patient/appointments',
       icon: (
@@ -148,9 +158,42 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
         </svg>
       ),
     },
+    {
+      name: 'Smart Prescription',
+      path: '/patient/smart-prescription',
+      icon: (
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="3" y="3" width="18" height="18" rx="2"/>
+          <path d="M8 12h8M12 8v8"/>
+        </svg>
+      ),
+    },
+    {
+      name: 'Family Access',
+      path: '/patient/family-access',
+      icon: (
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="10" />
+          <path d="M8 15s1.5-2 4-2 4 2 4 2" />
+          <circle cx="9" cy="10" r="1" />
+          <circle cx="15" cy="10" r="1" />
+        </svg>
+      ),
+    },
+    {
+      name: 'AI Image Analysis',
+      path: '/patient/ai-image-analysis',
+      icon: (
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="3" y="3" width="18" height="18" rx="2" />
+          <circle cx="8.5" cy="8.5" r="1.5" />
+          <polyline points="21 15 16 10 5 21" />
+        </svg>
+      ),
+    },
   ];
   
-  const items = user.role === 'doctor' ? doctorItems : patientItems;
+  let items = user.role === 'doctor' ? doctorItems : patientItems;
   
   return (
     <div className="h-full flex flex-col bg-white border-r border-gray-200 w-64">

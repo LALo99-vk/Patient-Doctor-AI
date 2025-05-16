@@ -1,7 +1,9 @@
 import { ChatMessage, FirstAidGuide, Medication } from '../types';
+import axios from 'axios';
 
 const API_BASE_URL = 'https://api.openai.com/v1';
 const OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY;
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 // Helper function for API calls
 const apiCall = async (endpoint: string, method: string = 'GET', data?: any) => {
@@ -54,26 +56,18 @@ export const chatWithGPT = async (message: string): Promise<ChatMessage> => {
 export const transcribeAudio = async (audioBlob: Blob): Promise<string> => {
   try {
     const formData = new FormData();
-    formData.append('file', audioBlob, 'audio.wav');
-    formData.append('model', 'whisper-1');
-    
-    const response = await fetch(`${API_BASE_URL}/audio/transcriptions`, {
-      method: 'POST',
+    formData.append('audio', audioBlob);
+
+    const response = await axios.post(`${API_URL}/transcribe`, formData, {
       headers: {
-        'Authorization': `Bearer ${OPENAI_API_KEY}`
+        'Content-Type': 'multipart/form-data',
       },
-      body: formData
     });
-    
-    if (!response.ok) {
-      throw new Error(`Transcription failed: ${response.statusText}`);
-    }
-    
-    const data = await response.json();
-    return data.text;
+
+    return response.data.transcription;
   } catch (error) {
-    console.error('Transcription failed:', error);
-    throw error;
+    console.error('Error transcribing audio:', error);
+    throw new Error('Failed to transcribe audio');
   }
 };
 
@@ -171,3 +165,15 @@ export const getMedicationPricing = async (medicationName: string): Promise<Medi
     throw error;
   }
 };
+
+// User/Profile
+export const getUser = (id: string) => axios.get(`${API_URL}/users/${id}`);
+export const updateUser = (id: string, data: any) => axios.put(`${API_URL}/users/${id}`, data);
+
+// Appointments
+export const getAppointments = (userId: string) => axios.get(`${API_URL}/appointments`, { params: { userId } });
+export const createAppointment = (data: any) => axios.post(`${API_URL}/appointments`, data);
+
+// Prescriptions
+export const getPrescriptions = (userId: string) => axios.get(`${API_URL}/prescriptions`, { params: { userId } });
+export const createPrescription = (data: any) => axios.post(`${API_URL}/prescriptions`, data);

@@ -1,15 +1,27 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import Button from './Button';
+import { useLanguage, Language } from '../../context/LanguageContext';
+import { Link } from 'react-router-dom';
 
 interface HeaderProps {
   title: string;
 }
 
+const languageOptions: { code: Language; name: string }[] = [
+  { code: 'en', name: 'English' },
+  { code: 'hi', name: 'हिंदी (Hindi)' },
+  { code: 'ta', name: 'தமிழ் (Tamil)' },
+  { code: 'te', name: 'తెలుగు (Telugu)' },
+  { code: 'kn', name: 'ಕನ್ನಡ (Kannada)' },
+  { code: 'ml', name: 'മലയാളം (Malayalam)' },
+];
+
 const Header: React.FC<HeaderProps> = ({ title }) => {
   const { user, logout } = useAuth();
   const [showDropdown, setShowDropdown] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
+  const { language, setLanguage } = useLanguage();
   
   // Mock notifications
   const notifications = [
@@ -47,12 +59,12 @@ const Header: React.FC<HeaderProps> = ({ title }) => {
         <div className="relative">
           <select
             className="appearance-none bg-white border border-gray-300 rounded-md py-1 pl-3 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            defaultValue="en"
+            value={language}
+            onChange={e => setLanguage(e.target.value as Language)}
           >
-            <option value="en">English</option>
-            <option value="es">Español</option>
-            <option value="fr">Français</option>
-            <option value="de">Deutsch</option>
+            {languageOptions.map(option => (
+              <option key={option.code} value={option.code}>{option.name}</option>
+            ))}
           </select>
           <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
             <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -132,21 +144,21 @@ const Header: React.FC<HeaderProps> = ({ title }) => {
           {showDropdown && (
             <div className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10">
               <div className="py-1">
-                <a
-                  href="/profile"
-                  className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                <Link
+                  to="/patient/profile"
+                  className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                 >
                   Your Profile
-                </a>
-                <a
-                  href="/settings"
-                  className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                </Link>
+                <Link
+                  to="/settings"
+                  className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                 >
                   Settings
-                </a>
+                </Link>
                 <button
                   onClick={logout}
-                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                 >
                   Sign out
                 </button>

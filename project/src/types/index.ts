@@ -4,6 +4,16 @@ export interface User {
   email: string;
   role: 'doctor' | 'patient';
   licenseId?: string; // For doctors only
+  // Patient profile fields
+  profilePic?: string;
+  phone?: string;
+  address?: string;
+  gender?: string;
+  age?: number;
+  bloodType?: string;
+  allergies?: string[];
+  conditions?: string[];
+  careRecipients?: { id: string; name: string; email: string }[];
 }
 
 export interface Patient {
